@@ -28,7 +28,8 @@ router.post('/:user', async (req, res) => {
 router.get('/:user', async (req, res) => {
   const userId = req.params.user
   try {
-    const response = await layout.layoutModel.find({ user: userId })
+    const response = await layout.layoutModel.find({ user: userId });
+    console.log('response in layout get: ', response);
     res.status(200).send(response)
   } catch (error) {
     res.send(error)
