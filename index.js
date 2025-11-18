@@ -5,21 +5,53 @@ const cors = require('cors')
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose')
 // CORS configuration - supports both development and production
-const allowedOrigins = process.env.NODE_ENV === 'production'
-  ? (process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [])
-  : ['http://localhost:3000', 'http://localhost:3002', process.env.FRONTEND_URL];
+const getAllowedOrigins = () => {
+  const origins = [];
+  
+  // Always include localhost for development
+  if (process.env.NODE_ENV !== 'production') {
+    origins.push('http://localhost:3000', 'http://localhost:3002');
+  }
+  
+  // Add FRONTEND_URL if provided (supports comma-separated multiple URLs)
+  if (process.env.FRONTEND_URL) {
+    const frontendUrls = process.env.FRONTEND_URL.split(',').map(url => url.trim()).filter(Boolean);
+    origins.push(...frontendUrls);
+  }
+  
+  // Filter out any undefined/null values
+  return origins.filter(Boolean);
+};
+
+const allowedOrigins = getAllowedOrigins();
+
+// Log allowed origins in production for debugging (remove sensitive info if needed)
+if (process.env.NODE_ENV === 'production') {
+  console.log('CORS allowed origins:', allowedOrigins.length > 0 ? allowedOrigins : 'NONE SET - CORS will fail!');
+}
 
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
+    
+    // If no origins are configured in production, log warning but allow (for debugging)
+    if (allowedOrigins.length === 0) {
+      console.warn('CORS: No allowed origins configured. Allowing request from:', origin);
+      return callback(null, true);
+    }
+    
     if (allowedOrigins.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
+      console.warn('CORS: Blocked request from origin:', origin);
+      console.warn('CORS: Allowed origins are:', allowedOrigins);
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }))
 app.use(bodyParser.json())
 
