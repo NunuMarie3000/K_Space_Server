@@ -21,28 +21,37 @@ const aboutMe = require('./routes/aboutMeRoute')
 const profile = require('./routes/profileRoute')
 const auth = require('./routes/authRoute')
 
-mongoose.connect(process.env.MONGODB_CONNECTION_STRING, ()=>{
-  console.log('db connected');
-})
+// Connect to MongoDB and start server
+async function startServer() {
+  try {
+    await mongoose.connect(process.env.MONGODB_CONNECTION_STRING)
+    console.log('db connected')
+    
+    // seed.seedUser()
+    // seed.seedUserInfo()
+    // seed.seedEntry()
+    // app.use(home)
+    app.use('/users', users)
+    app.use(user)
+    app.use(entry)
+    app.use('/layout', layout)
+    app.use('/aboutme', aboutMe)
+    app.use('/profile', profile)
+    app.use('/auth', auth)
 
-// seed.seedUser()
-// seed.seedUserInfo()
-// seed.seedEntry()
-// app.use(home)
-app.use('/users', users)
-app.use(user)
-app.use(entry)
-app.use('/layout', layout)
-app.use('/aboutme', aboutMe)
-app.use('/profile', profile)
-app.use('/auth', auth)
+    app.get('/test', (req, res) => {
+      console.log('Test route hit')
+      res.json({ message: 'Server is running' })
+    })
 
-app.get('/test', (req, res) => {
-  console.log('Test route hit')
-  res.json({ message: 'Server is running' })
-})
+    const PORT = process.env.PORT || 3002
+    app.listen(PORT, ()=>{
+      console.log(`listening on port ${PORT}`)
+    })
+  } catch (error) {
+    console.error('Failed to connect to MongoDB:', error)
+    process.exit(1)
+  }
+}
 
-const PORT = process.env.PORT || 3002
-app.listen(PORT, ()=>{
-  console.log(`listening on port ${PORT}`)
-})
+startServer()
