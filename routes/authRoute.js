@@ -91,7 +91,6 @@ router.post('/forgot-password', async (req, res) => {
     // Save token to user
     user.resetToken = resetToken
     user.resetTokenExpiry = resetTokenExpiry
-    user.password = 'reset-me';
     await user.save()
     console.log('done saving user');
     // Send email

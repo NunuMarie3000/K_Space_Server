@@ -49,7 +49,6 @@ router.get('/:email', async (req,res)=>{
 // get 1 user
 router.get('/user/:user', async (req,res)=>{
   const userId = req.params.user
-  console.log('hello')
   try {
     const searchedUser = await user.userModel.find({"_id": {$eq: userId}}).populate("entries")
     res.status(200).send(searchedUser)
